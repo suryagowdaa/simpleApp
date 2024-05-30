@@ -23,19 +23,22 @@ jobs:
       - name: Rotate Reviewers
         id: rotate
         run: |
-          reviewers=("suryagowdaa" "prachimat" "arko-maersk")
-          index=${{ steps.get_index.outputs.index }}
+          reviewers=("suryagowda" "arko-maersk" "prachimat")
+          index_file=.reviewer_index
+          current_index=$(cat "$index_file")
           AUTHOR=$(jq --raw-output .pull_request.user.login "$GITHUB_EVENT_PATH")
           
-          current_reviewer=${reviewers[$index]}
-          if [ "$current_reviewer" == "$AUTHOR" ]; then
-            next_index=$((($index + 1) % ${#reviewers[@]}))
-            current_reviewer=${reviewers[$next_index]}
-          fi
+          next_index=$((($current_index + 1) % ${#reviewers[@]}))
+          current_reviewer=${reviewers[$current_index]}
           
-          next_index=$((($index + 1) % ${#reviewers[@]}))
+          while [ "$current_reviewer" == "$AUTHOR" ]; do
+            current_index=$next_index
+            next_index=$((($current_index + 1) % ${#reviewers[@]}))
+            current_reviewer=${reviewers[$current_index]}
+          done
+          
           echo "::set-output name=reviewer::$current_reviewer"
-          echo "$next_index" > .reviewer_index
+          echo "$next_index" > "$index_file"
           
       - name: Install jq
         run: |
