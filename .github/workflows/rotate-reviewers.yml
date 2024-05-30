@@ -20,11 +20,13 @@ jobs:
         run: |
           index_file=.reviewer_index
           if [ ! -f "$index_file" ]; then
-            echo "current_index=0" >> $GITHUB_ENV
+            echo "0" > .reviewer_index
+            current_index=0
           else
             current_index=$(cat "$index_file")
-            echo "current_index=$current_index" >> $GITHUB_ENV
           fi
+          echo "current_index=$current_index" >> $GITHUB_ENV
+          echo "Current reviewer index: $current_index"
 
       - name: Rotate Reviewers
         id: rotate
@@ -46,6 +48,8 @@ jobs:
 
           echo "reviewer=$current_reviewer" >> $GITHUB_ENV
           echo "next_index=$next_index" >> $GITHUB_ENV
+          echo "Assigned reviewer: $current_reviewer"
+          echo "Next reviewer index: $next_index"
 
       - name: Assign Reviewer
         env:
@@ -63,4 +67,6 @@ jobs:
         env:
           next_index: ${{ env.next_index }}
         run: |
+          echo "Updating reviewer index to $next_index"
           echo "$next_index" > .reviewer_index
+          cat .reviewer_index
