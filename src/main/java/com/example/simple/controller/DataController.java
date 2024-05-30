@@ -12,7 +12,7 @@ import java.util.List;
 public class DataController {
 
     @Autowired
-    private CountryRepository countryRRepository;
+    private CountryRepository countryRepository;
 
     @PostMapping("/country")
     public String addCountry(@RequestBody Country country) {
