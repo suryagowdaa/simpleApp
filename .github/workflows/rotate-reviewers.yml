@@ -24,18 +24,14 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const github = require('@octokit/rest');  # Assuming no conflicting dependencies
-            const reviewers = core.getInput('reviewers').split(',');  # Assuming reviewers provided as input
+            const reviewers = core.getInput('reviewers').split(',');
             const currentReviewerIndex = parseInt(core.getState('currentReviewerIndex') || 0);
             const nextReviewerIndex = (currentReviewerIndex + 1) % reviewers.length;
             const nextReviewer = reviewers[nextReviewerIndex];
-
-            const octokit = new github.Octokit({ auth: core.secrets.GITHUB_TOKEN });
             const { owner, repo } = context.repo;
             const pullNumber = context.issue.number;
-
             try {
-              await octokit.issues.addAssignees({
+              await github.issues.addAssignees({
                 owner,
                 repo,
                 issue_number: pullNumber,
