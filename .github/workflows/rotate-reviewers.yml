@@ -23,7 +23,7 @@ jobs:
       - name: Rotate Reviewers
         id: rotate
         run: |
-          reviewers=("suryagowda" "arko-maersk" "prachimat")
+          reviewers=("suryagowdaa" "arko-maersk" "prachimat")
           index_file=.reviewer_index
           current_index=$(cat "$index_file")
           AUTHOR=$(jq --raw-output .pull_request.user.login "$GITHUB_EVENT_PATH")
