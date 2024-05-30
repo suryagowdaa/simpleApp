@@ -23,7 +23,7 @@ jobs:
       - name: Rotate Reviewers
         id: rotate
         run: |
-          reviewers=("user1" "user2" "user3" "user4" "user5" "user6")
+          reviewers=("suryagowdaa" "arko-maersk")
           index=${{ steps.get_index.outputs.index }}
           AUTHOR=$(jq --raw-output .pull_request.user.login "$GITHUB_EVENT_PATH")
           
