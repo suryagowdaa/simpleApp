@@ -13,7 +13,7 @@ jobs:
       - id: load_reviewers
         name: Load Reviewer List
         run: |
-          reviewers_file=".github/workflows/reviewers.txt"
+          reviewers_file=".github/reviewers.txt"
           if [ ! -f "$reviewers_file" ]; then
             echo "Please create a file named '$reviewers_file' containing reviewers (one per line)."
             exit 1
@@ -24,9 +24,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const core = require('@actions/core');
             const github = require('@octokit/rest');
-            const reviewers = core.getInput('reviewers').split(',');
+            const reviewers = core.getInput('reviewers').split(',');  # Assuming reviewers are provided as input
             const currentReviewerIndex = parseInt(core.getState('currentReviewerIndex') || 0);
             const nextReviewerIndex = (currentReviewerIndex + 1) % reviewers.length;
             const nextReviewer = reviewers[nextReviewerIndex];
