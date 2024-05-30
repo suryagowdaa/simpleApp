@@ -1,7 +1,7 @@
-name: Pull Request Rotation
+name: PR Rotation
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened]
 
 jobs:
@@ -9,42 +9,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - id: load_reviewers
-        name: Load Reviewer List
+      - name: Get Current Reviewer Index
+        id: get_index
         run: |
-          reviewers_file=".github/workflows/reviewers.txt"
-          if [ ! -f "$reviewers_file" ]; then
-            echo "Please create a file named '$reviewers_file' containing reviewers (one per line)."
-            exit 1
+          index_file=.reviewer_index
+          if [ ! -f "$index_file" ]; then
+            echo "0" > "$index_file"
           fi
-          reviewers=$(cat "$reviewers_file")
-
-      - uses: actions/github-script@v6
+          current_index=$(cat "$index_file")
+          echo "::set-output name=index::$current_index"
+      - name: Rotate Reviewers
+        id: rotate
+        run: |
+          reviewers=("suryagowdaa" "arko-maersk")
+          index=${{ steps.get_index.outputs.index }}
+          current_reviewer=${reviewers[$index]}
+          next_index=$((($index + 1) % ${#reviewers[@]}))
+          echo "::set-output name=reviewer::$current_reviewer"
+          echo "$next_index" > .reviewer_index
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            # Avoid defining a custom 'github' variable (commented out)
-            # const github = require('@octokit/rest');  <-- Remove this line
-
-            const reviewers = core.getInput('reviewers').split(',');  # Assuming reviewers provided as input
-            const currentReviewerIndex = parseInt(core.getState('currentReviewerIndex') || 0);
-            const nextReviewerIndex = (currentReviewerIndex + 1) % reviewers.length;
-            const nextReviewer = reviewers[nextReviewerIndex];
-
-            const octokit = new github.Octokit({ auth: core.secrets.GITHUB_TOKEN });
-            const { owner, repo } = context.repo;
-            const pullNumber = context.issue.number;
-
-            try {
-              await octokit.issues.addAssignees({
-                owner,
-                repo,
-                issue_number: pullNumber,
-                assignees: [nextReviewer]
-              });
-              core.setState('currentReviewerIndex', nextReviewerIndex.toString());
-              console.log(`Pull request #${pullNumber} assigned to @${nextReviewer}`);
-            } catch (error) {
-              core.setFailed(`Error assigning reviewer: ${error.message}`);
-            }
+          reviewers: ${{ steps.rotate.outputs.reviewer }}
