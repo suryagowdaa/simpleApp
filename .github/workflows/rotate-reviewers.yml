@@ -45,7 +45,7 @@ jobs:
           done
 
           echo "reviewer=$current_reviewer" >> $GITHUB_ENV
-          echo "$next_index" > .reviewer_index
+          echo "next_index=$next_index" >> $GITHUB_ENV
 
       - name: Assign Reviewer
         env:
@@ -60,6 +60,7 @@ jobs:
             -d "{\"reviewers\":[\"$reviewer\"]}"
 
       - name: Update Reviewer Index
+        env:
+          next_index: ${{ env.next_index }}
         run: |
-          next_index=${{ env.next_index }}
           echo "$next_index" > .reviewer_index
