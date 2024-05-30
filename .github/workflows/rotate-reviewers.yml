@@ -12,12 +12,20 @@ jobs:
       - name: Rotate Reviewers
         id: rotate
         run: |
-          reviewers=("suryagowdaa" "arko-maersk")
+          reviewers=("suryagowdaa" "arko-maersk") 
           pr_number=${{ github.event.pull_request.number }}
           current_reviewer_index=$(($pr_number % ${#reviewers[@]}))
           current_reviewer=${reviewers[$current_reviewer_index]}
           echo "reviewer=$current_reviewer" >> $GITHUB_ENV
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+      - name: Set Reviewer Output
+        run: echo "::set-output name=reviewer::$current_reviewer"
+      - name: Create Pull Request Review
+        uses: actions/github-script@v6
         with:
-          reviewers: ${{ env.reviewer }}
+          script: |
+            github.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              reviewers: [process.env.reviewer]
+            })
