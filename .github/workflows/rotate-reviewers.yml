@@ -10,32 +10,34 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Get Current Reviewer
-        id: get_reviewer
+      - name: Get Current Reviewer Index
+        id: get_index
         run: |
-          reviewer_file=.current_reviewer
-          if [ -f "$reviewer_file" ]; then
-            current_reviewer=$(cat "$reviewer_file")
-          else
-            current_reviewer=""
+          index_file=.reviewer_index
+          if [ ! -f "$index_file" ]; then
+            echo "0" > "$index_file"
           fi
-          echo "::set-output name=reviewer::$current_reviewer"
+          current_index=$(cat "$index_file")
+          echo "::set-output name=index::$current_index"
 
       - name: Rotate Reviewers
         id: rotate
         run: |
           reviewers=("suryagowdaa" "arko-maersk" "prachimat")
-          current_reviewer=${{ steps.get_reviewer.outputs.reviewer }}
-          if [ -z "$current_reviewer" ]; then
-            current_index=0
-          else
-            current_index=$(printf "%s\n" "${reviewers[@]}" | grep -nx "$current_reviewer" | cut -d: -f1)
-            current_index=$((current_index - 1))
-          fi
-          next_index=$((($current_index + 1) % ${#reviewers[@]}))
-          next_reviewer=${reviewers[$next_index]}
-          echo "$next_reviewer" > .current_reviewer
-          echo "::set-output name=reviewer::$next_reviewer"
+          index=${{ steps.get_index.outputs.index }}
+          AUTHOR=$(jq --raw-output .pull_request.user.login "$GITHUB_EVENT_PATH")
+
+          next_index=$((($index + 1) % ${#reviewers[@]}))
+          current_reviewer=${reviewers[$index]}
+
+          while [ "$current_reviewer" == "$AUTHOR" ]; do
+            index=$next_index
+            next_index=$((($index + 1) % ${#reviewers[@]}))
+            current_reviewer=${reviewers[$index]}
+          done
+
+          echo "::set-output name=reviewer::$current_reviewer"
+          echo "$next_index" > "$index_file"
 
       - name: Install jq
         run: |
