@@ -8,24 +8,35 @@ jobs:
   rotate_reviewers:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
       - name: Rotate Reviewers
         id: rotate
         run: |
           reviewers=("suryagowdaa" "arko-maersk") 
           pr_number=${{ github.event.pull_request.number }}
-          current_reviewer_index=$(($pr_number % ${#reviewers[@]}))
+          current_reviewer_index=$((pr_number % ${#reviewers[@]}))
           current_reviewer=${reviewers[$current_reviewer_index]}
-          echo "reviewer=$current_reviewer" >> $GITHUB_ENV
-      - name: Set Reviewer Output
-        run: echo "::set-output name=reviewer::$current_reviewer"
-      - name: Create Pull Request Review
+          echo "::set-output name=reviewer::$current_reviewer"
+
+      - name: Request Reviewer
         uses: actions/github-script@v6
         with:
           script: |
-            github.pulls.requestReviewers({
+            const { data: pullRequest } = await github.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number,
-              reviewers: [process.env.reviewer]
-            })
+            });
+
+            const reviewers = [process.env.reviewer];
+            await github.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullRequest.number,
+              reviewers: reviewers,
+            });
+        env:
+          reviewer: ${{ steps.rotate.outputs.reviewer }}
+          github-token: ${{ secrets.GITHUB_TOKEN }} 
