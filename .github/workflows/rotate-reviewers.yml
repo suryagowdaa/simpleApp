@@ -1,14 +1,15 @@
-name: PR Rotation
+name: Assign PR Reviewer
 
 on:
   pull_request_target:
     types: [opened]
 
 jobs:
-  rotate_reviewers:
+  assign-reviewer:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
       - name: Get Current Reviewer Index
         id: get_index
         run: |
@@ -18,6 +19,7 @@ jobs:
           fi
           current_index=$(cat "$index_file")
           echo "::set-output name=index::$current_index"
+          
       - name: Rotate Reviewers
         id: rotate
         run: |
@@ -27,8 +29,18 @@ jobs:
           next_index=$((($index + 1) % ${#reviewers[@]}))
           echo "::set-output name=reviewer::$current_reviewer"
           echo "$next_index" > .reviewer_index
+          
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          
       - name: Assign Reviewer
-        uses: talkto/assign-reviewers@v1.0.0
-        with:
-          reviewers: ${{ steps.rotate.outputs.reviewer }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PULL_REQUEST_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          REVIEWER=${{ steps.rotate.outputs.reviewer }}
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/pulls/$PULL_REQUEST_NUMBER/requested_reviewers \
+            -d "{\"reviewers\":[\"$REVIEWER\"]}"
