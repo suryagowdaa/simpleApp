@@ -27,7 +27,7 @@ jobs:
           next_index=$((($index + 1) % ${#reviewers[@]}))
           echo "::set-output name=reviewer::$current_reviewer"
           echo "$next_index" > .reviewer_index
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
+      - name: Assign Reviewer
+        uses: thenpm/gh-action-assign-reviewer@v2
         with:
           reviewers: ${{ steps.rotate.outputs.reviewer }}
