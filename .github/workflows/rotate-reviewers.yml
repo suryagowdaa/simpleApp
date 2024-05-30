@@ -24,7 +24,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const github = require('@octokit/rest');
+            
             const reviewers = core.getInput('reviewers').split(',');  # Assuming reviewers are provided as input
             const currentReviewerIndex = parseInt(core.getState('currentReviewerIndex') || 0);
             const nextReviewerIndex = (currentReviewerIndex + 1) % reviewers.length;
