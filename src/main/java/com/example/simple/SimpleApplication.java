@@ -8,6 +8,7 @@ public class SimpleApplication {
 
 	public static void main(String[] args) {
 		System.out.println("Hi, Check this out Surya");
+		System.out.println("Another one");
 		SpringApplication.run(SimpleApplication.class, args);
 	}
 
