@@ -10,4 +10,6 @@ class SimpleApplicationTests {
 	void contextLoads() {
 	}
 
+	System.out.println("yo buddy")
+
 }
