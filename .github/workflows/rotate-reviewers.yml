@@ -28,6 +28,6 @@ jobs:
           echo "::set-output name=reviewer::$current_reviewer"
           echo "$next_index" > .reviewer_index
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         with:
           reviewers: ${{ steps.rotate.outputs.reviewer }}
