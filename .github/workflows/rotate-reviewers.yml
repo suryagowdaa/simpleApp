@@ -13,7 +13,7 @@ jobs:
       - id: load_reviewers
         name: Load Reviewer List
         run: |
-          reviewers_file=".github/reviewers.txt"
+          reviewers_file=".github/workflows/reviewers.txt"
           if [ ! -f "$reviewers_file" ]; then
             echo "Please create a file named '$reviewers_file' containing reviewers (one per line)."
             exit 1
