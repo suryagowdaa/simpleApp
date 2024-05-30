@@ -1,0 +1,23 @@
+name: PR Rotation
+
+on:
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  rotate_reviewers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Rotate Reviewers
+        id: rotate
+        run: |
+          reviewers=("suryagowdaa" "arko-maersk")
+          pr_number=${{ github.event.pull_request.number }}
+          current_reviewer_index=$(($pr_number % ${#reviewers[@]}))
+          current_reviewer=${reviewers[$current_reviewer_index]}
+          echo "reviewer=$current_reviewer" >> $GITHUB_ENV
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          reviewers: ${{ env.reviewer }}
