@@ -15,17 +15,18 @@ jobs:
         run: |
           index_file=.reviewer_index
           if [ ! -f "$index_file" ]; then
-            echo "0" > "$index_file"
+            echo "current_index=0" >> $GITHUB_ENV
+          else
+            current_index=$(cat "$index_file")
+            echo "current_index=$current_index" >> $GITHUB_ENV
           fi
-          current_index=$(cat "$index_file")
-          echo "::set-output name=index::$current_index"
 
       - name: Rotate Reviewers
         id: rotate
         run: |
           reviewers=("suryagowdaa" "arko-maersk" "prachimat")
-          index=${{ steps.get_index.outputs.index }}
-          AUTHOR=$(jq --raw-output .pull_request.user.login "$GITHUB_EVENT_PATH")
+          index=${{ env.current_index }}
+          AUTHOR=$(jq --raw-output .pull_request.user.login "$GITHUB_ENV_PATH")
 
           next_index=$((($index + 1) % ${#reviewers[@]}))
           current_reviewer=${reviewers[$index]}
@@ -36,8 +37,8 @@ jobs:
             current_reviewer=${reviewers[$index]}
           done
 
-          echo "::set-output name=reviewer::$current_reviewer"
-          echo "$next_index" > "$index_file"
+          echo "reviewer=$current_reviewer" >> $GITHUB_ENV
+          echo "$next_index" > .reviewer_index
 
       - name: Install jq
         run: |
@@ -47,7 +48,7 @@ jobs:
       - name: Assign Reviewer
         run: |
           PULL_REQUEST_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          REVIEWER=${{ steps.rotate.outputs.reviewer }}
+          REVIEWER=${{ env.reviewer }}
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
