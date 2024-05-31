@@ -1,11 +1,11 @@
-name: PR Template Verification
+name: PR Template Checker
 
 on:
   pull_request:
-    types: [opened, reopened, edited]
+    types: [opened, edited]
 
 jobs:
-  verify_template:
+  verify-pr-template:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -13,16 +13,8 @@ jobs:
 
       - name: Verify PR template
         run: |
-          template_content=$(cat ${{ github.event.pull_request.files[0].filename }})
-          if [[ $template_content == *"## Description"* ]] &&
-             [[ $template_content == *"## Type of change"* ]] &&
-             [[ $template_content == *"## How Has This Been Tested?"* ]] &&
-             [[ $template_content == *"## Checklist:"* ]] &&
-             ( [[ $template_content == *"- [x]"* ]] ||
-               [[ $template_content == *"- [ ]"* ]] )
-          then
-            echo "PR template verified successfully"
-          else
-            echo "PR template verification failed"
+          PR_BODY=$(cat $GITHUB_EVENT_PATH | jq -r '.pull_request.body')
+          if [[ ! $PR_BODY =~ "## Description" || ! $PR_BODY =~ "## Type of change" || ! $PR_BODY =~ "## How Has This Been Tested?" || ! $PR_BODY =~ "## Checklist:" ]]; then
+            echo "PR template is not followed!"
             exit 1
           fi
