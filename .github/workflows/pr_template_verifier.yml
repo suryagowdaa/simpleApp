@@ -20,25 +20,31 @@ jobs:
           fi
 
           # Check if description is present
-          if [[ ! $PR_BODY =~ "## Description" || $(echo "$PR_BODY" | grep -c "## Description") -gt 1 ]]; then
+          if [[ $(echo "$PR_BODY" | grep -c "## Description") -ne 1 ]]; then
             echo "Description section is missing or duplicated!"
             exit 1
           fi
 
-          # Check if at least one option is marked in "Type of change" section
-          if [[ ! $PR_BODY =~ "- \[x\]" ]]; then
-            echo "At least one option should be marked in 'Type of change' section!"
+          # Check if type of change is present
+          if [[ $(echo "$PR_BODY" | grep -c "## Type of change") -ne 1 ]]; then
+            echo "Type of change section is missing or duplicated!"
             exit 1
           fi
 
-          # Check if either description or tests are present in "How Has This Been Tested?" section
-          if [[ ! $PR_BODY =~ "- \[x\]" && ! $PR_BODY =~ "- \[x\] Test A" && ! $PR_BODY =~ "- \[x\] Test B" ]]; then
-            echo "Either description or tests should be present in 'How Has This Been Tested?' section!"
+          # Check if How Has This Been Tested? section is present
+          if [[ $(echo "$PR_BODY" | grep -c "## How Has This Been Tested?") -ne 1 ]]; then
+            echo "How Has This Been Tested? section is missing or duplicated!"
             exit 1
           fi
 
-          # Check if at least one option is marked in the checklist section
-          if [[ ! $PR_BODY =~ "- \[x\]" ]]; then
-            echo "At least one option should be marked in the checklist!"
+          # Check if Checklist section is present
+          if [[ $(echo "$PR_BODY" | grep -c "## Checklist:") -ne 1 ]]; then
+            echo "Checklist section is missing or duplicated!"
+            exit 1
+          fi
+
+          # Check if Fixes #(issue) is present
+          if [[ $(echo "$PR_BODY" | grep -c "Fixes #[0-9]+") -ne 1 ]]; then
+            echo "Fixes #(issue) is missing or duplicated!"
             exit 1
           fi
