@@ -21,6 +21,12 @@ jobs:
               exit 1
           fi
 
+          # Check if Fixes #(issue) with link is present in Description section
+          if [[ ! $PR_BODY =~ "Fixes #[0-9]+" ]]; then
+              echo "Fixes #(issue) is missing in the Description section!"
+              exit 1
+          fi
+
           # Check if type of change section is present and at least one option is marked
           if [[ ! $PR_BODY =~ "## Type of change" || $(echo "$PR_BODY" | grep -c "\[x\]") -eq 0 ]]; then
               echo "At least one option should be marked in 'Type of change' section!"
