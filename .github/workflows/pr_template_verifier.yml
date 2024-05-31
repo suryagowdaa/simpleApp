@@ -1,0 +1,20 @@
+name: PR Verifier
+
+on:
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  verify-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Verify PR template
+        run: |
+          PR_BODY=$(cat $GITHUB_EVENT_PATH | jq -r '.pull_request.body')
+          if [[ ! $PR_BODY =~ "## Description" || ! $PR_BODY =~ "## Type of change" || ! $PR_BODY =~ "## How Has This Been Tested?" || ! $PR_BODY =~ "## Checklist:" || ! $PR_BODY =~ "- \[x\] My code follows the style guidelines of this project" || ! $PR_BODY =~ "- \[x\] I have performed a self-review of my own code" || ! $PR_BODY =~ "- \[x\] I have commented my code, particularly in hard-to-understand areas" || ! $PR_BODY =~ "- \[x\] I have made corresponding changes to the documentation" || ! $PR_BODY =~ "- \[x\] My changes generate no new warnings" || ! $PR_BODY =~ "- \[x\] I have added tests that prove my fix is effective or that my feature works" || ! $PR_BODY =~ "- \[x\] New and existing unit tests pass locally with my changes" || ! $PR_BODY =~ "- \[x\] Any dependent changes have been merged and published in downstream modules" || ! $PR_BODY =~ "- \[x\] I have created the metrics and alerts for the changes" || ! $PR_BODY =~ "Fixes #[0-9]+" ]]; then
+            echo "PR template is not followed!"
+            exit 1
+          fi
