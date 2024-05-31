@@ -13,7 +13,7 @@ jobs:
 
       - name: Verify PR template
         run: |
-          PR_BODY=$(cat $GITHUB_EVENT_PATH | jq -r '.pull_request.body')
+          PR_BODY=$(tr -d '\r' < $GITHUB_EVENT_PATH | jq -r '.pull_request.body')
           if [[ ! $PR_BODY =~ "## Description" || ! $PR_BODY =~ "## Type of change" || ! $PR_BODY =~ "## How Has This Been Tested?" || ! $PR_BODY =~ "## Checklist:" || ! $PR_BODY =~ "Fixes #[0-9]+" ]]; then
             echo "One or more sections of the PR template are missing!"
             exit 1
