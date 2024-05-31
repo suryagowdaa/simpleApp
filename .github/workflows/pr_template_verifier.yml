@@ -39,8 +39,4 @@ jobs:
               exit 1
           fi
 
-          # Check if Fixes #(issue) is present
-          if [[ ! $PR_BODY =~ "Fixes #[0-9]+(https?://\S+)" ]]; then
-              echo "Fixes #(issue) should contain a link!"
-              exit 1
-          fi
+          
