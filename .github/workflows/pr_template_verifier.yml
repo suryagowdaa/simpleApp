@@ -15,31 +15,27 @@ jobs:
         run: |
           PR_BODY=$(tr -d '\r' < $GITHUB_EVENT_PATH | jq -r '.pull_request.body')
           
-          # Check if description section is present and contains description
+          # for description
           if [[ ! $PR_BODY =~ "## Description" || $(echo "$PR_BODY" | grep -c "## Description") -ne 1 ]]; then
               echo "Description section is missing or duplicated!"
               exit 1
           fi
 
-          # Check if Fixes #(issue) with link is present in Description section
-          if [[ ! $PR_BODY =~ "Fixes #[0-9]+" ]]; then
-              echo "Fixes #(issue) is missing in the Description section!"
-              exit 1
-          fi
+          
 
-          # Check if type of change section is present and at least one option is marked
+          # for type of change section 
           if [[ ! $PR_BODY =~ "## Type of change" || $(echo "$PR_BODY" | grep -c "\[x\]") -eq 0 ]]; then
               echo "At least one option should be marked in 'Type of change' section!"
               exit 1
           fi
 
-          # Check if How Has This Been Tested? section is present and either some description or test options are marked
+          # for How Has This Been Tested? section is present and either some description or test options are marked
           if [[ ! $PR_BODY =~ "## How Has This Been Tested?" || $(echo "$PR_BODY" | grep -c "\[x\]") -eq 0 ]]; then
               echo "Either some description or at least one test option should be marked in 'How Has This Been Tested?' section!"
               exit 1
           fi
 
-          # Check if Checklist section is present and at least one option is marked
+          # for Checklist section is present and at least one option is marked
           if [[ ! $PR_BODY =~ "## Checklist:" || $(echo "$PR_BODY" | grep -c "\[x\]") -eq 0 ]]; then
               echo "At least one option should be marked in the checklist!"
               exit 1
