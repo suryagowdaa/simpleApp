@@ -27,15 +27,12 @@ jobs:
           fi
           echo "current_index=$current_index" >> $GITHUB_ENV
           echo "Current reviewer index: $current_index"
-          cat "$index_file"
 
       - name: Rotate Reviewers
         id: rotate
-        env:
-          current_index: ${{ env.current_index }}
         run: |
           reviewers=("suryagowdaa" "arko-maersk" "prachimat")
-          index=${current_index}
+          index=${{ env.current_index }}
           AUTHOR=$(jq --raw-output .pull_request.user.login "$GITHUB_EVENT_PATH")
 
           next_index=$((($index + 1) % ${#reviewers[@]}))
@@ -65,11 +62,15 @@ jobs:
             -d "{\"reviewers\":[\"$reviewer\"]}"
 
       - name: Update Reviewer Index
-        env:
-          next_index: ${{ env.next_index }}
         run: |
+          next_index=${{ env.next_index }}
           echo "Updating reviewer index to $next_index"
           echo "$next_index" > .reviewer_index
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add .reviewer_index
+          git commit -m "Update reviewer index to $next_index"
+          git push
           echo "Contents of .reviewer_index after update:"
           cat .reviewer_index
 
