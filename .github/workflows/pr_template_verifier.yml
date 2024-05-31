@@ -1,11 +1,11 @@
-name: PR Verifier
+name: PR Template Verification
 
 on:
   pull_request:
-    types: [opened, edited]
+    types: [opened, reopened, edited]
 
 jobs:
-  verify-pr:
+  verify_template:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -13,8 +13,16 @@ jobs:
 
       - name: Verify PR template
         run: |
-          PR_BODY=$(cat $GITHUB_EVENT_PATH | jq -r '.pull_request.body')
-          if [[ ! $PR_BODY =~ "## Description" || ! $PR_BODY =~ "## Type of change" || ! $PR_BODY =~ "## How Has This Been Tested?" || ! $PR_BODY =~ "## Checklist:" || ! $PR_BODY =~ "- \[x\] My code follows the style guidelines of this project" || ! $PR_BODY =~ "- \[x\] I have performed a self-review of my own code" || ! $PR_BODY =~ "- \[x\] I have commented my code, particularly in hard-to-understand areas" || ! $PR_BODY =~ "- \[x\] I have made corresponding changes to the documentation" || ! $PR_BODY =~ "- \[x\] My changes generate no new warnings" || ! $PR_BODY =~ "- \[x\] I have added tests that prove my fix is effective or that my feature works" || ! $PR_BODY =~ "- \[x\] New and existing unit tests pass locally with my changes" || ! $PR_BODY =~ "- \[x\] Any dependent changes have been merged and published in downstream modules" || ! $PR_BODY =~ "- \[x\] I have created the metrics and alerts for the changes" || ! $PR_BODY =~ "Fixes #[0-9]+" ]]; then
-            echo "PR template is not followed!"
+          template_content=$(cat ${{ github.event.pull_request.files[0].filename }})
+          if [[ $template_content == *"## Description"* ]] &&
+             [[ $template_content == *"## Type of change"* ]] &&
+             [[ $template_content == *"## How Has This Been Tested?"* ]] &&
+             [[ $template_content == *"## Checklist:"* ]] &&
+             ( [[ $template_content == *"- [x]"* ]] ||
+               [[ $template_content == *"- [ ]"* ]] )
+          then
+            echo "PR template verified successfully"
+          else
+            echo "PR template verification failed"
             exit 1
           fi
