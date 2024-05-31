@@ -14,7 +14,31 @@ jobs:
       - name: Verify PR template
         run: |
           PR_BODY=$(cat $GITHUB_EVENT_PATH | jq -r '.pull_request.body')
-          if [[ ! $PR_BODY =~ "## Description" || ! $PR_BODY =~ "## Type of change" || ! $PR_BODY =~ "## How Has This Been Tested?" || ! $PR_BODY =~ "## Checklist:" ]]; then
-            echo "PR template is not followed!"
+          if [[ ! $PR_BODY =~ "## Description" || ! $PR_BODY =~ "## Type of change" || ! $PR_BODY =~ "## How Has This Been Tested?" || ! $PR_BODY =~ "## Checklist:" || ! $PR_BODY =~ "Fixes #[0-9]+" ]]; then
+            echo "One or more sections of the PR template are missing!"
+            exit 1
+          fi
+
+          # Check if description is present
+          if [[ ! $PR_BODY =~ "## Description" || $(echo "$PR_BODY" | grep -c "## Description") -gt 1 ]]; then
+            echo "Description section is missing or duplicated!"
+            exit 1
+          fi
+
+          # Check if at least one option is marked in "Type of change" section
+          if [[ ! $PR_BODY =~ "- \[x\]" ]]; then
+            echo "At least one option should be marked in 'Type of change' section!"
+            exit 1
+          fi
+
+          # Check if either description or tests are present in "How Has This Been Tested?" section
+          if [[ ! $PR_BODY =~ "- \[x\]" && ! $PR_BODY =~ "- \[x\] Test A" && ! $PR_BODY =~ "- \[x\] Test B" ]]; then
+            echo "Either description or tests should be present in 'How Has This Been Tested?' section!"
+            exit 1
+          fi
+
+          # Check if at least one option is marked in the checklist section
+          if [[ ! $PR_BODY =~ "- \[x\]" ]]; then
+            echo "At least one option should be marked in the checklist!"
             exit 1
           fi
