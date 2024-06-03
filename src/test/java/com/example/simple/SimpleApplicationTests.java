@@ -10,6 +10,6 @@ class SimpleApplicationTests {
 	void contextLoads() {
 	}
 
-	System.out.println("budy")
+	System.out.println("Hello World")
 
 }
