@@ -6,7 +6,7 @@
 * Gradle
 
 1. Clone the project repository.
-2. Navigate to the project directory in your terminal.
+2. Navigate to project directory in your terminal.
 3. Run `./gradlew build` to build the project. (On Windows use `gradlew.bat build`)
 4. Run `./gradlew bootRun` to start the application. (On Windows use `gradlew.bat bootRun`)
 
